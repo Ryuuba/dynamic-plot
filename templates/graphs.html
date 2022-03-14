@@ -2,32 +2,93 @@
 <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device_width, initial-scale=1.0">
-        <title>Lecturas de CO2</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Lecturas de niveles de concentración de CO2</title>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+        <style>
+            * {
+              box-sizing: border-box;
+            }
+            .charts:after {
+                content: "";
+                display: table;
+                clear: both;
+            }
+            .chart {
+                float: left;
+                width: 50%;
+                padding: 10px;
+            } 
+            @media screen and (max-width: 1024px) {
+                .chart {
+                    width: 100%;
+                }
+            }
+        </style>
     </head>
     <body>
-        <canvas id="lineChart" width="940" height="560"></canvas>
+        <h1>Niveles de concentración de CO2</h1>
+        <p>Esta página muestra los niveles de concentración de CO2 de la oficina C722 y el Laboratorio de Redes mediante una gráfica que se actualiza cada 5 minutos. En cada gráfica, el eje de las abcisas muestra el tiempo en el que se toma cada lectura, mientras que el eje de las ordenadas indica el nivel de CO2 del área medida en millones de partículas por millón [ppm].</p>
+        <div class="charts">
+            <div class="chart">
+                <h2>Oficina C722</h2>
+                <p>
+                    <canvas id="lineChartC722" width="512" height="288"></canvas>
+                </p>
+            </div>
+            <div class="chart">
+                <h2>Laboratorio de redes</h2>
+                <p>
+                    <canvas id="lineChartLabRedes" width="512" height="288"></canvas>
+                </p>
+            </div>
+        </div>
         <script>
-            var ctx = document.getElementById("lineChart").getContext("2d");
-            var lineChart = new Chart(ctx, {
+            var c722Ctx = document.getElementById("lineChartC722").getContext("2d");
+            var labRedCtx = document.getElementById("lineChartLabRedes").getContext("2d");
+            const config = {
                 type: "line",
-                data:{
-                    labels: {{labels | safe}},
+                data: {
+                    labels: [],
                     datasets: [
                         {
-                            label: "CO2 [ppm]",
-                            data: {{values | safe}},
+                            label: "",
+                            data: [],
                             fill: true,
-                            borderColor: "rgb(0, 128, 128)",
+                            borderColor: "",
                             lineTension: 0.1
                         }
                     ]
                 },
                 options: {
-                    responsive: true
+                    responsive: false
                 }
-            });
+            };
+            const c722Chart = new Chart(c722Ctx, config);
+            const labRedChart = new Chart(labRedCtx, config);
+            const source = new EventSource("/chart-data");
+            source.onmessage = function (event) {
+                const data = JSON.parse(event.data);
+                if (config.data.labels.length === 10) {
+                    config.data.labels.shift();
+                    config.data.datasets[0].data.shift();
+                }
+                config.data.datasets[0].label=data.C722title;
+                config.data.datasets[0].borderColor=data.C722color;
+                config.data.labels.push(data.C722time);
+                config.data.datasets[0].data.push(data.C722value);
+                c722Chart.update();
+                if (config.data.labels.length === 10) {
+                    config.data.labels.shift();
+                    config.data.datasets[0].data.shift();
+                }
+                config.data.datasets[0].label=data.LabRedtitle;
+                config.data.datasets[0].borderColor=data.LabRedcolor;
+                config.data.labels.push(data.LabRedtime);
+                config.data.datasets[0].data.push(data.LabRedvalue);
+                labRedChart.update();
+            }
         </script>
     </body>
 </html>

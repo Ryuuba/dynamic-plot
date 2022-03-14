@@ -34,6 +34,8 @@ def update_readings():
                     labred_data[0][0], tzlocal.get_localzone()
                     ).strftime('%H:%M:%S')
             labred_val = labred_data[0][2]
+            print('C722time: {}, C722value: {}'.format(c722_time, c722_val))
+            print('LabRedtime: {}, LabRedvalue: {}'.format(labred_time, labred_val))
             db_conn.close()
             json_data = json.dumps(
                 {

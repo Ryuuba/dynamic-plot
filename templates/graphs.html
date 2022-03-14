@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device_width, initial-scale=1.0">
+        <title>Lecturas de CO2</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+    </head>
+    <body>
+        <canvas id="lineChart" width="940" height="560"></canvas>
+        <script>
+            var ctx = document.getElementById("lineChart").getContext("2d");
+            var lineChart = new Chart(ctx, {
+                type: "line",
+                data:{
+                    labels: {{labels | safe}},
+                    datasets: [
+                        {
+                            label: "CO2 [ppm]",
+                            data: {{values | safe}},
+                            fill: true,
+                            borderColor: "rgb(0, 128, 128)",
+                            lineTension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        </script>
+    </body>
+</html>
